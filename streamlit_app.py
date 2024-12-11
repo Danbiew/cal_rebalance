@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from matplotlib import rcParams
 
 # 리밸런싱 계산 함수
 def calculate_rebalance(current_portfolio, target_allocation):
@@ -20,10 +19,10 @@ def parse_number_with_comma(number_str):
     return int(number_str.replace(",", ""))
 
 # Streamlit 앱 설정
-st.title("Asset Portfolio Rebalancing")
+st.title("자산 포트폴리오 리밸런싱")
 
 # 1단계: 현재 포트폴리오 입력
-st.header("Step 1: Input Current Portfolio")
+st.header("1단계: 현재 포트폴리오 입력")
 
 # 자산 클래스 정의 (영어 약어 사용)
 assets = ['Stock', 'Bond', 'ETF', 'Cash', 'Real Estate', 'Crypto', 'Commodities']
@@ -32,32 +31,35 @@ assets = ['Stock', 'Bond', 'ETF', 'Cash', 'Real Estate', 'Crypto', 'Commodities'
 current_portfolio = {}
 for asset in assets:
     # 쉼표가 포함된 숫자 입력을 위한 텍스트 입력창 생성
-    user_input = st.text_input(f"Enter the current value of {asset} (KRW)", value="1,000,000")
+    user_input = st.text_input(f"{asset}의 현재 가치를 입력하세요 (단위: KRW)", value="")
     
     # 쉼표가 있는 입력값을 숫자로 변환
     try:
-        current_portfolio[asset] = parse_number_with_comma(user_input)
+        if user_input:  # 입력이 비어있지 않으면
+            current_portfolio[asset] = parse_number_with_comma(user_input)
+        else:
+            current_portfolio[asset] = 0  # 빈칸일 경우 0으로 설정
     except ValueError:
-        st.warning(f"Invalid input for {asset}. Please enter a valid number.")
+        st.warning(f"{asset}의 입력 값이 올바르지 않습니다. 숫자 형식으로 다시 입력해 주세요.")
 
 # 2단계: 목표 배분 입력
-st.header("Step 2: Set Target Allocation")
+st.header("2단계: 목표 배분 설정")
 
 # 목표 배분 비율을 숫자로 입력받기
 target_allocation = {}
 total_allocation = 0
 
 for asset in assets:
-    target_percentage = st.number_input(f"Target allocation percentage for {asset} (%)", min_value=0, max_value=100, value=15)
+    target_percentage = st.number_input(f"{asset}의 목표 배분 비율 (%)", min_value=0, max_value=100, value=0)  # 초기값을 0으로 설정
     target_allocation[asset] = target_percentage
     total_allocation += target_percentage
 
 # 목표 배분 비율 합이 100%가 되도록 조정
 if total_allocation != 100:
-    st.warning(f"The total target allocation is not 100%. It is currently {total_allocation}%.")
+    st.warning(f"목표 배분 비율의 합이 100%가 아닙니다. 현재 합은 {total_allocation}%입니다.")
 
 # 3단계: 리밸런싱 계산
-st.header("Step 3: Rebalancing Calculation")
+st.header("3단계: 리밸런싱 계산")
 
 # 목표 배분 비율의 합이 100%가 되지 않으면 리밸런싱 계산을 진행하지 않음
 if total_allocation == 100:
@@ -69,15 +71,15 @@ if total_allocation == 100:
     target_values, rebalance_suggestions = calculate_rebalance(current_portfolio, target_allocation)
 
     # 목표 자산 가치 출력
-    st.subheader("Target Portfolio Value (KRW)")
-    st.write(pd.DataFrame(list(target_values.items()), columns=["Asset", "Target Value"]))
+    st.subheader("목표 포트폴리오 가치 (단위: KRW)")
+    st.write(pd.DataFrame(list(target_values.items()), columns=["자산", "목표 가치"]))
 
     # 리밸런싱 제안 출력
-    st.subheader("Rebalancing Suggestions (KRW)")
-    st.write(pd.DataFrame(list(rebalance_suggestions.items()), columns=["Asset", "Rebalancing Amount"]))
+    st.subheader("리밸런싱 제안 (단위: KRW)")
+    st.write(pd.DataFrame(list(rebalance_suggestions.items()), columns=["자산", "리밸런싱 금액"]))
 
     # 4단계: 시각화
-    st.header("Step 4: Portfolio Visualization")
+    st.header("4단계: 포트폴리오 시각화")
 
     # 현재 포트폴리오와 목표 포트폴리오를 비교하는 바 차트 생성
     current_values = list(current_portfolio.values())
@@ -101,7 +103,7 @@ if total_allocation == 100:
     st.pyplot(fig)
 
     # 5단계: 히트맵 표시
-    st.header("Step 5: Portfolio Heatmap")
+    st.header("5단계: 포트폴리오 히트맵")
 
     # 히트맵 데이터 준비
     heatmap_data = pd.DataFrame({
