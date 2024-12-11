@@ -12,6 +12,13 @@ def calculate_rebalance(current_portfolio, target_allocation):
     rebalance_suggestions = {asset: target_values[asset] - current_portfolio[asset] for asset in current_portfolio}
     return target_values, rebalance_suggestions
 
+# 쉼표가 있는 숫자 형식 처리 함수
+def format_number_with_comma(number):
+    return "{:,.0f}".format(number)
+
+def parse_number_with_comma(number_str):
+    return int(number_str.replace(",", ""))
+
 # Streamlit 앱 설정
 st.title("자산 포트폴리오 리밸런싱")
 
@@ -24,14 +31,14 @@ assets = ['Stock', 'Bond', 'ETF', 'Cash', 'Real Estate', 'Cryptocurrency', 'Comm
 # 각 자산의 현재 가치를 입력받기 위한 입력창 생성
 current_portfolio = {}
 for asset in assets:
-    # 금액을 1000단위로 쉼표(,)가 표시되게 하기
-    current_portfolio[asset] = st.number_input(
-        f"{asset}의 현재 가치를 입력하세요 (단위: KRW)",
-        min_value=0,
-        value=1000000,
-        step=100000,
-        format="%d"
-    )
+    # 쉼표가 포함된 숫자 입력을 위한 텍스트 입력창 생성
+    user_input = st.text_input(f"{asset}의 현재 가치를 입력하세요 (단위: KRW)", value="1,000,000")
+    
+    # 쉼표가 있는 입력값을 숫자로 변환
+    try:
+        current_portfolio[asset] = parse_number_with_comma(user_input)
+    except ValueError:
+        st.warning(f"{asset}의 입력 값이 올바르지 않습니다. 숫자 형식으로 다시 입력해 주세요.")
 
 # 2단계: 목표 배분 입력
 st.header("2단계: 목표 배분 설정")
