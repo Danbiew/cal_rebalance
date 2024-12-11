@@ -1,3 +1,22 @@
+import matplotlib.pyplot as plt
+from matplotlib import font_manager, rcParams
+
+# 시스템에서 사용 가능한 한글 폰트를 자동으로 찾기
+font_path = None
+for font in font_manager.findSystemFonts(fontpaths=None, fontext='ttf'):
+    if 'NanumGothic' in font:
+        font_path = font
+        break
+
+# 폰트가 찾으면 설정
+if font_path:
+    font_prop = font_manager.FontProperties(fname=font_path)
+    rcParams['font.family'] = font_prop.get_name()
+    rcParams['axes.unicode_minus'] = False
+else:
+    print("한글 폰트를 찾을 수 없습니다. 폰트를 설치한 후 다시 시도해주세요.")
+
+
 import streamlit as st
 import pandas as pd
 import numpy as np
