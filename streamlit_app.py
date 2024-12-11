@@ -20,44 +20,44 @@ def parse_number_with_comma(number_str):
     return int(number_str.replace(",", ""))
 
 # Streamlit 앱 설정
-st.title("자산 포트폴리오 리밸런싱")
+st.title("Asset Portfolio Rebalancing")
 
 # 1단계: 현재 포트폴리오 입력
-st.header("1단계: 현재 포트폴리오 입력")
+st.header("Step 1: Input Current Portfolio")
 
-# 자산 클래스 정의
-assets = ['Stock', 'Bond', 'ETF', 'Cash', 'Real Estate', 'Cryptocurrency', 'Commodities']
+# 자산 클래스 정의 (영어 약어 사용)
+assets = ['Stock', 'Bond', 'ETF', 'Cash', 'Real Estate', 'Crypto', 'Commodities']
 
 # 각 자산의 현재 가치를 입력받기 위한 입력창 생성
 current_portfolio = {}
 for asset in assets:
     # 쉼표가 포함된 숫자 입력을 위한 텍스트 입력창 생성
-    user_input = st.text_input(f"{asset}의 현재 가치를 입력하세요 (단위: KRW)", value="1,000,000")
+    user_input = st.text_input(f"Enter the current value of {asset} (KRW)", value="1,000,000")
     
     # 쉼표가 있는 입력값을 숫자로 변환
     try:
         current_portfolio[asset] = parse_number_with_comma(user_input)
     except ValueError:
-        st.warning(f"{asset}의 입력 값이 올바르지 않습니다. 숫자 형식으로 다시 입력해 주세요.")
+        st.warning(f"Invalid input for {asset}. Please enter a valid number.")
 
 # 2단계: 목표 배분 입력
-st.header("2단계: 목표 배분 설정")
+st.header("Step 2: Set Target Allocation")
 
 # 목표 배분 비율을 숫자로 입력받기
 target_allocation = {}
 total_allocation = 0
 
 for asset in assets:
-    target_percentage = st.number_input(f"{asset}의 목표 배분 비율 (%)", min_value=0, max_value=100, value=15)
+    target_percentage = st.number_input(f"Target allocation percentage for {asset} (%)", min_value=0, max_value=100, value=15)
     target_allocation[asset] = target_percentage
     total_allocation += target_percentage
 
 # 목표 배분 비율 합이 100%가 되도록 조정
 if total_allocation != 100:
-    st.warning(f"목표 배분 비율의 합이 100%가 아닙니다. 현재 합은 {total_allocation}%입니다.")
+    st.warning(f"The total target allocation is not 100%. It is currently {total_allocation}%.")
 
 # 3단계: 리밸런싱 계산
-st.header("3단계: 리밸런싱 계산")
+st.header("Step 3: Rebalancing Calculation")
 
 # 목표 배분 비율의 합이 100%가 되지 않으면 리밸런싱 계산을 진행하지 않음
 if total_allocation == 100:
@@ -69,15 +69,15 @@ if total_allocation == 100:
     target_values, rebalance_suggestions = calculate_rebalance(current_portfolio, target_allocation)
 
     # 목표 자산 가치 출력
-    st.subheader("목표 포트폴리오 가치 (단위: KRW)")
-    st.write(pd.DataFrame(list(target_values.items()), columns=["자산", "목표 가치"]))
+    st.subheader("Target Portfolio Value (KRW)")
+    st.write(pd.DataFrame(list(target_values.items()), columns=["Asset", "Target Value"]))
 
     # 리밸런싱 제안 출력
-    st.subheader("리밸런싱 제안 (단위: KRW)")
-    st.write(pd.DataFrame(list(rebalance_suggestions.items()), columns=["자산", "리밸런싱 금액"]))
+    st.subheader("Rebalancing Suggestions (KRW)")
+    st.write(pd.DataFrame(list(rebalance_suggestions.items()), columns=["Asset", "Rebalancing Amount"]))
 
     # 4단계: 시각화
-    st.header("4단계: 포트폴리오 시각화")
+    st.header("Step 4: Portfolio Visualization")
 
     # 현재 포트폴리오와 목표 포트폴리오를 비교하는 바 차트 생성
     current_values = list(current_portfolio.values())
@@ -87,33 +87,33 @@ if total_allocation == 100:
     bar_width = 0.35
     index = np.arange(len(assets))
 
-    bar1 = ax.bar(index, current_values, bar_width, label='현재 포트폴리오')
-    bar2 = ax.bar(index + bar_width, target_values_list, bar_width, label='목표 포트폴리오')
+    bar1 = ax.bar(index, current_values, bar_width, label='Current Portfolio')
+    bar2 = ax.bar(index + bar_width, target_values_list, bar_width, label='Target Portfolio')
 
-    ax.set_xlabel('자산 종류')
-    ax.set_ylabel('가치 (KRW)')
-    ax.set_title('현재 포트폴리오 vs 목표 포트폴리오')
+    ax.set_xlabel('Asset Type')
+    ax.set_ylabel('Value (KRW)')
+    ax.set_title('Current vs Target Portfolio')
     ax.set_xticks(index + bar_width / 2)
-    ax.set_xticklabels(assets)
+    ax.set_xticklabels([asset[:3] for asset in assets])  # 자산 이름 약어 사용
     ax.legend()
 
     # 차트 표시
     st.pyplot(fig)
 
     # 5단계: 히트맵 표시
-    st.header("5단계: 포트폴리오 히트맵")
+    st.header("Step 5: Portfolio Heatmap")
 
     # 히트맵 데이터 준비
     heatmap_data = pd.DataFrame({
-        '자산': assets,
-        '현재 가치': list(current_portfolio.values()),
-        '목표 가치': list(target_values.values()),
-        '리밸런싱 제안': list(rebalance_suggestions.values())
+        'Asset': assets,
+        'Current Value': list(current_portfolio.values()),
+        'Target Value': list(target_values.values()),
+        'Rebalancing Suggestion': list(rebalance_suggestions.values())
     })
-    heatmap_data.set_index('자산', inplace=True)
+    heatmap_data.set_index('Asset', inplace=True)
 
     # 히트맵 그리기
     plt.figure(figsize=(10, 6))
     sns.heatmap(heatmap_data, annot=True, fmt='.0f', cmap='coolwarm', cbar=True)
-    plt.title('포트폴리오 히트맵: 현재 vs 목표 vs 리밸런싱 제안')
+    plt.title('Portfolio Heatmap: Current vs Target vs Rebalancing Suggestion')
     st.pyplot(plt)
