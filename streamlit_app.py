@@ -27,49 +27,59 @@ for asset in assets:
 # 2단계: 목표 배분 입력
 st.header("2단계: 목표 배분 설정")
 
-# 목표 배분 비율을 설정하기 위한 슬라이더 생성
+# 목표 배분 비율을 숫자로 입력받기
 target_allocation = {}
+total_allocation = 0
+
 for asset in assets:
-    target_allocation[asset] = st.slider(f"{asset}의 목표 배분 비율 (%)", min_value=0, max_value=100, value=25)
+    target_percentage = st.number_input(f"{asset}의 목표 배분 비율 (%)", min_value=0, max_value=100, value=25)
+    target_allocation[asset] = target_percentage
+    total_allocation += target_percentage
+
+# 목표 배분 비율 합이 100%가 되도록 조정
+if total_allocation != 100:
+    st.warning("목표 배분 비율의 합이 100%가 되지 않았습니다. 현재 합계는 {}%입니다.".format(total_allocation))
 
 # 3단계: 리밸런싱 계산
 st.header("3단계: 리밸런싱 계산")
 
-# 목표 배분 비율의 합이 100%가 되도록 정규화
-allocation_sum = sum(target_allocation.values())
-target_allocation = {asset: allocation / allocation_sum for asset, allocation in target_allocation.items()}
+# 목표 배분 비율의 합이 100%가 되지 않으면 리밸런싱 계산을 진행하지 않음
+if total_allocation == 100:
+    # 목표 배분 비율을 100%로 정규화
+    allocation_sum = sum(target_allocation.values())
+    target_allocation = {asset: allocation / allocation_sum for asset, allocation in target_allocation.items()}
 
-# 목표 자산 가치와 리밸런싱 제안 계산
-target_values, rebalance_suggestions = calculate_rebalance(current_portfolio, target_allocation)
+    # 목표 자산 가치와 리밸런싱 제안 계산
+    target_values, rebalance_suggestions = calculate_rebalance(current_portfolio, target_allocation)
 
-# 목표 자산 가치 출력
-st.subheader("목표 포트폴리오 가치 (단위: KRW)")
-st.write(pd.DataFrame(list(target_values.items()), columns=["자산", "목표 가치"]))
+    # 목표 자산 가치 출력
+    st.subheader("목표 포트폴리오 가치 (단위: KRW)")
+    st.write(pd.DataFrame(list(target_values.items()), columns=["자산", "목표 가치"]))
 
-# 리밸런싱 제안 출력
-st.subheader("리밸런싱 제안 (단위: KRW)")
-st.write(pd.DataFrame(list(rebalance_suggestions.items()), columns=["자산", "리밸런싱 금액"]))
+    # 리밸런싱 제안 출력
+    st.subheader("리밸런싱 제안 (단위: KRW)")
+    st.write(pd.DataFrame(list(rebalance_suggestions.items()), columns=["자산", "리밸런싱 금액"]))
 
-# 4단계: 시각화
-st.header("4단계: 포트폴리오 시각화")
+    # 4단계: 시각화
+    st.header("4단계: 포트폴리오 시각화")
 
-# 현재 포트폴리오와 목표 포트폴리오를 비교하는 바 차트 생성
-current_values = list(current_portfolio.values())
-target_values_list = list(target_values.values())
+    # 현재 포트폴리오와 목표 포트폴리오를 비교하는 바 차트 생성
+    current_values = list(current_portfolio.values())
+    target_values_list = list(target_values.values())
 
-fig, ax = plt.subplots()
-bar_width = 0.35
-index = np.arange(len(assets))
+    fig, ax = plt.subplots()
+    bar_width = 0.35
+    index = np.arange(len(assets))
 
-bar1 = ax.bar(index, current_values, bar_width, label='현재 포트폴리오')
-bar2 = ax.bar(index + bar_width, target_values_list, bar_width, label='목표 포트폴리오')
+    bar1 = ax.bar(index, current_values, bar_width, label='현재 포트폴리오')
+    bar2 = ax.bar(index + bar_width, target_values_list, bar_width, label='목표 포트폴리오')
 
-ax.set_xlabel('자산 클래스')
-ax.set_ylabel('가치 (KRW)')
-ax.set_title('현재 포트폴리오 vs 목표 포트폴리오')
-ax.set_xticks(index + bar_width / 2)
-ax.set_xticklabels(assets)
-ax.legend()
+    ax.set_xlabel('자산 클래스')
+    ax.set_ylabel('가치 (KRW)')
+    ax.set_title('현재 포트폴리오 vs 목표 포트폴리오')
+    ax.set_xticks(index + bar_width / 2)
+    ax.set_xticklabels(assets)
+    ax.legend()
 
-# 차트 표시
-st.pyplot(fig)
+    # 차트 표시
+    st.pyplot(fig)
