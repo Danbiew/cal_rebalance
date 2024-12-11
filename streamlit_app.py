@@ -80,11 +80,15 @@ if total_allocation == 100:
 
     # 목표 자산 가치 출력
     st.subheader("목표 포트폴리오 가치 (단위: KRW)")
-    st.write(pd.DataFrame(list(target_values.items()), columns=["자산", "목표 가치"]))
+    target_df = pd.DataFrame(list(target_values.items()), columns=["자산", "목표 가치"])
+    target_df["목표 가치"] = target_df["목표 가치"].apply(format_number_with_comma)
+    st.write(target_df)
 
     # 리밸런싱 제안 출력
     st.subheader("리밸런싱 제안 (단위: KRW)")
-    st.write(pd.DataFrame(list(rebalance_suggestions.items()), columns=["자산", "리밸런싱 금액"]))
+    rebalance_df = pd.DataFrame(list(rebalance_suggestions.items()), columns=["자산", "리밸런싱 금액"])
+    rebalance_df["리밸런싱 금액"] = rebalance_df["리밸런싱 금액"].apply(format_number_with_comma)
+    st.write(rebalance_df)
 
     # 4단계: 시각화
     st.header("4단계: 포트폴리오 시각화")
@@ -104,7 +108,7 @@ if total_allocation == 100:
     ax.set_ylabel('Value (KRW)')
     ax.set_title('Current vs Target Portfolio')
     ax.set_xticks(index + bar_width / 2)
-    ax.set_xticklabels([f"{asset[:3]} ({korean_name})" for asset, korean_name in assets.items()])  # 자산 이름 약어 + 한글 번역
+    ax.set_xticklabels([asset for asset in assets.keys()])  # 그래프에서 영어로만 표시
     ax.legend()
 
     # 차트 표시
@@ -115,7 +119,7 @@ if total_allocation == 100:
 
     # 히트맵 데이터 준비
     heatmap_data = pd.DataFrame({
-        'Asset': [f"{asset} ({korean_name})" for asset, korean_name in assets.items()],
+        'Asset': list(assets.keys()),
         'Current Value': list(current_portfolio.values()),
         'Target Value': list(target_values.values()),
         'Rebalancing Suggestion': list(rebalance_suggestions.values())
