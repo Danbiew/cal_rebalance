@@ -26,13 +26,13 @@ st.header("1단계: 현재 포트폴리오 입력")
 
 # 자산 클래스 정의 (영어와 한글 병기)
 assets = {
+    'Savings Account': '예적금',
     'Stock': '주식',
-    'Bond': '채권',
     'ETF': 'ETF',
-    'Cash': '현금',
-    'Real Estate': '부동산',
-    'Crypto': '암호화폐',
-    'Commodities': '원자재'
+    'Pension': '연금저축',
+    'Bond': '채권',
+    'Gold': '금',
+    'Real Estate': '부동산'
 }
 
 # 각 자산의 현재 가치를 입력받기 위한 입력창 생성
