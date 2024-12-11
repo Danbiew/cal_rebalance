@@ -24,14 +24,22 @@ st.title("자산 포트폴리오 리밸런싱")
 # 1단계: 현재 포트폴리오 입력
 st.header("1단계: 현재 포트폴리오 입력")
 
-# 자산 클래스 정의 (영어 약어 사용)
-assets = ['Stock', 'Bond', 'ETF', 'Cash', 'Real Estate', 'Crypto', 'Commodities']
+# 자산 클래스 정의 (영어와 한글 병기)
+assets = {
+    'Stock': '주식',
+    'Bond': '채권',
+    'ETF': 'ETF',
+    'Cash': '현금',
+    'Real Estate': '부동산',
+    'Crypto': '암호화폐',
+    'Commodities': '원자재'
+}
 
 # 각 자산의 현재 가치를 입력받기 위한 입력창 생성
 current_portfolio = {}
-for asset in assets:
+for asset, korean_name in assets.items():
     # 쉼표가 포함된 숫자 입력을 위한 텍스트 입력창 생성
-    user_input = st.text_input(f"{asset}의 현재 가치를 입력하세요 (단위: KRW)", value="")
+    user_input = st.text_input(f"{asset} ({korean_name})의 현재 가치를 입력하세요 (단위: KRW)", value="")
     
     # 쉼표가 있는 입력값을 숫자로 변환
     try:
@@ -40,7 +48,7 @@ for asset in assets:
         else:
             current_portfolio[asset] = 0  # 빈칸일 경우 0으로 설정
     except ValueError:
-        st.warning(f"{asset}의 입력 값이 올바르지 않습니다. 숫자 형식으로 다시 입력해 주세요.")
+        st.warning(f"{asset} ({korean_name})의 입력 값이 올바르지 않습니다. 숫자 형식으로 다시 입력해 주세요.")
 
 # 2단계: 목표 배분 입력
 st.header("2단계: 목표 배분 설정")
@@ -49,8 +57,8 @@ st.header("2단계: 목표 배분 설정")
 target_allocation = {}
 total_allocation = 0
 
-for asset in assets:
-    target_percentage = st.number_input(f"{asset}의 목표 배분 비율 (%)", min_value=0, max_value=100, value=0)  # 초기값을 0으로 설정
+for asset, korean_name in assets.items():
+    target_percentage = st.number_input(f"{asset} ({korean_name})의 목표 배분 비율 (%)", min_value=0, max_value=100, value=0)  # 초기값을 0으로 설정
     target_allocation[asset] = target_percentage
     total_allocation += target_percentage
 
@@ -96,7 +104,7 @@ if total_allocation == 100:
     ax.set_ylabel('Value (KRW)')
     ax.set_title('Current vs Target Portfolio')
     ax.set_xticks(index + bar_width / 2)
-    ax.set_xticklabels([asset[:3] for asset in assets])  # 자산 이름 약어 사용
+    ax.set_xticklabels([f"{asset[:3]} ({korean_name})" for asset, korean_name in assets.items()])  # 자산 이름 약어 + 한글 번역
     ax.legend()
 
     # 차트 표시
@@ -107,7 +115,7 @@ if total_allocation == 100:
 
     # 히트맵 데이터 준비
     heatmap_data = pd.DataFrame({
-        'Asset': assets,
+        'Asset': [f"{asset} ({korean_name})" for asset, korean_name in assets.items()],
         'Current Value': list(current_portfolio.values()),
         'Target Value': list(target_values.values()),
         'Rebalancing Suggestion': list(rebalance_suggestions.values())
