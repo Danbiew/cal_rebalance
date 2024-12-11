@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from matplotlib import rcParams
 
 # 리밸런싱 계산 함수
@@ -18,12 +19,19 @@ st.title("Asset Portfolio Rebalancing")
 st.header("Step 1: Enter Current Portfolio")
 
 # 자산 클래스 정의
-assets = ['Stock', 'Bond', 'ETF', 'Cash']
+assets = ['Stock', 'Bond', 'ETF', 'Cash', 'Real Estate', 'Cryptocurrency', 'Commodities']
 
 # 각 자산의 현재 가치를 입력받기 위한 입력창 생성
 current_portfolio = {}
 for asset in assets:
-    current_portfolio[asset] = st.number_input(f"Enter the current value of {asset} (Unit: KRW)", min_value=0, value=1000000, step=100000)
+    # 금액을 1000단위로 쉼표(,)가 표시되게 하기
+    current_portfolio[asset] = st.number_input(
+        f"Enter the current value of {asset} (Unit: KRW)",
+        min_value=0,
+        value=1000000,
+        step=100000,
+        format="%d"
+    )
 
 # 2단계: 목표 배분 입력
 st.header("Step 2: Set Target Allocation")
@@ -33,7 +41,7 @@ target_allocation = {}
 total_allocation = 0
 
 for asset in assets:
-    target_percentage = st.number_input(f"Target allocation for {asset} (%)", min_value=0, max_value=100, value=25)
+    target_percentage = st.number_input(f"Target allocation for {asset} (%)", min_value=0, max_value=100, value=15)
     target_allocation[asset] = target_percentage
     total_allocation += target_percentage
 
@@ -84,3 +92,21 @@ if total_allocation == 100:
 
     # 차트 표시
     st.pyplot(fig)
+
+    # 5단계: 히트맵 표시
+    st.header("Step 5: Portfolio Heatmap")
+
+    # 히트맵 데이터 준비
+    heatmap_data = pd.DataFrame({
+        'Asset': assets,
+        'Current Value': list(current_portfolio.values()),
+        'Target Value': list(target_values.values()),
+        'Rebalance Suggestion': list(rebalance_suggestions.values())
+    })
+    heatmap_data.set_index('Asset', inplace=True)
+
+    # 히트맵 그리기
+    plt.figure(figsize=(10, 6))
+    sns.heatmap(heatmap_data, annot=True, fmt='.0f', cmap='coolwarm', cbar=True)
+    plt.title('Portfolio Heatmap: Current vs Target vs Rebalance Suggestion')
+    st.pyplot(plt)
