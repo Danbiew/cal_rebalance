@@ -2,6 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
+# 한글 폰트 설정 (여기서는 'NanumGothic' 폰트를 사용합니다)
+rcParams['font.family'] = 'NanumGothic'
+rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨지는 문제 해결
 
 # 리밸런싱 계산 함수
 def calculate_rebalance(current_portfolio, target_allocation):
